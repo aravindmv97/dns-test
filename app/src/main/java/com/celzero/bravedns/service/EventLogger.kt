@@ -40,7 +40,7 @@ import java.util.concurrent.Executors
  *
  * Usage example:
  * ```
- * eventLogger.log(
+ * eventLogger?.log(
  *     type = EventType.VPN_START,
  *     severity = Severity.INFO,
  *     message = "VPN service started",

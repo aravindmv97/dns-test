@@ -980,7 +980,7 @@ internal constructor(
     }
 
     private suspend fun logEvent(severity: Severity, msg: String, details: String) {
-        eventLogger.log(EventType.APP_REFRESH, severity, msg, EventSource.MANAGER, false, details)
+        eventLogger?.log(EventType.APP_REFRESH, severity, msg, EventSource.MANAGER, false, details)
     }
 
     private fun printAll(c: Collection<FirewallManager.AppInfoTuple>, tag: String) {

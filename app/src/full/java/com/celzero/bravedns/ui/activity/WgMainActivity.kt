@@ -461,7 +461,7 @@ class WgMainActivity :
     }
 
     private fun logEvent(msg: String, details: String) {
-        eventLogger.log(EventType.PROXY_SWITCH, Severity.LOW, msg, EventSource.UI, false, details)
+        eventLogger?.log(EventType.PROXY_SWITCH, Severity.LOW, msg, EventSource.UI, false, details)
     }
 
     private fun io(f: suspend () -> Unit) {

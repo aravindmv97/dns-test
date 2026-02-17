@@ -2890,7 +2890,7 @@ class GoVpnAdapter : KoinComponent {
     }
 
     private fun logEvent(severity: Severity, msg: String, details: String) {
-        eventLogger.log(EventType.TUN_UPDATE, severity, msg, EventSource.VPN, false, details)
+        eventLogger?.log(EventType.TUN_UPDATE, severity, msg, EventSource.VPN, false, details)
     }
 
     private fun ui(f: suspend () -> Unit) {

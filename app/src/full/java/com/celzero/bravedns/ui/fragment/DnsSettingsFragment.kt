@@ -801,7 +801,7 @@ class DnsSettingsFragment : Fragment(R.layout.fragment_dns_configure),
     }
 
     private fun logEvent(msg: String, details: String) {
-        eventLogger.log(EventType.UI_SETTING_CHANGED, Severity.LOW, msg, EventSource.UI, false, details)
+        eventLogger?.log(EventType.UI_SETTING_CHANGED, Severity.LOW, msg, EventSource.UI, false, details)
     }
 
     private fun io(f: suspend () -> Unit) {

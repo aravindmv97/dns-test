@@ -717,7 +717,7 @@ internal constructor(
     }
 
     private suspend fun logEvent(type: EventType, msg: String, details: String) {
-        eventLogger.log(type, Severity.LOW, msg, EventSource.UI, true, details)
+        eventLogger?.log(type, Severity.LOW, msg, EventSource.UI, true, details)
     }
 
     suspend fun handleDoTChanges(doTEndpoint: DoTEndpoint) {

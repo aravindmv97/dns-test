@@ -368,7 +368,7 @@ class CustomIpFragment : Fragment(R.layout.fragment_custom_ip), SearchView.OnQue
     }
 
     private fun logEvent(details: String) {
-        eventLogger.log(EventType.FW_RULE_MODIFIED, Severity.LOW, "Custom IP", EventSource.UI, false, details)
+        eventLogger?.log(EventType.FW_RULE_MODIFIED, Severity.LOW, "Custom IP", EventSource.UI, false, details)
     }
 
     private suspend fun ioCtx(f: suspend () -> Unit) {

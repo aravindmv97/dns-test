@@ -65,7 +65,7 @@ class CustomDomainAdapter(
     val context: Context,
     val fragment: Fragment,
     val rule: CustomRulesActivity.RULES,
-    val eventLogger: EventLogger
+    val eventLogger: EventLogger?=null
 ) :
     PagingDataAdapter<CustomDomain, RecyclerView.ViewHolder>(DIFF_CALLBACK) {
 
@@ -643,7 +643,7 @@ class CustomDomainAdapter(
     }
 
     private fun logEvent(details: String) {
-        eventLogger.log(EventType.FW_RULE_MODIFIED, Severity.LOW, "Custom Domain", EventSource.UI, false, details)
+        eventLogger?.log(EventType.FW_RULE_MODIFIED, Severity.LOW, "Custom Domain", EventSource.UI, false, details)
     }
 
     private fun io(f: suspend () -> Unit) {

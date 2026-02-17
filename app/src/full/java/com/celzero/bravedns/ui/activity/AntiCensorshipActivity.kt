@@ -363,6 +363,6 @@ class AntiCensorshipActivity : AppCompatActivity(R.layout.activity_anti_censorsh
     }
 
     private fun logEvent(details: String) {
-        eventLogger.log(EventType.UI_TOGGLE, Severity.LOW, "Anti-censorship UI", EventSource.UI, false, details)
+        eventLogger?.log(EventType.UI_TOGGLE, Severity.LOW, "Anti-censorship UI", EventSource.UI, false, details)
     }
 }

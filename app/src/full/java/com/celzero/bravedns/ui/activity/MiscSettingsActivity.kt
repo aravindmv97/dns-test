@@ -1293,7 +1293,7 @@ class MiscSettingsActivity : AppCompatActivity(R.layout.activity_misc_settings) 
     }
 
     private fun logEvent(details: String) {
-        eventLogger.log(EventType.UI_TOGGLE, Severity.LOW, "Misc settings", EventSource.UI, false, details)
+        eventLogger?.log(EventType.UI_TOGGLE, Severity.LOW, "Misc settings", EventSource.UI, false, details)
     }
 
     private fun io(f: suspend () -> Unit) = lifecycleScope.launch(Dispatchers.IO) { f() }

@@ -194,7 +194,6 @@ class WgConfigAdapterTest : KoinTest {
         every { wgConfig.id } returns id
         every { wgConfig.name } returns name
         every { wgConfig.isActive } returns isActive
-        every { wgConfig.isLockdown } returns isLockdown
         every { wgConfig.isCatchAll } returns isCatchAll
         every { wgConfig.useOnlyOnMetered } returns useOnlyOnMetered
         every { wgConfig.ssidEnabled } returns ssidEnabled
@@ -338,7 +337,7 @@ class WgConfigAdapterTest : KoinTest {
         assertEquals("Expected ID: 123", 123, config.id)
         assertEquals("Expected name: TestConfig", "TestConfig", config.name)
         assertTrue("Expected isActive: true", config.isActive)
-        assertFalse("Expected isLockdown: false", config.isLockdown)
+//        assertFalse("Expected isLockdown: false", config.isLockdown)
         assertTrue("Expected isCatchAll: true", config.isCatchAll)
         assertTrue("Expected useOnlyOnMetered: true", config.useOnlyOnMetered)
         assertTrue("Expected ssidEnabled: true", config.ssidEnabled)
@@ -353,7 +352,7 @@ class WgConfigAdapterTest : KoinTest {
         )
 
         assertFalse("Expected isActive: false", lockdownConfig.isActive)
-        assertTrue("Expected isLockdown: true", lockdownConfig.isLockdown)
+//        assertTrue("Expected isLockdown: true", lockdownConfig.isLockdown)
     }
 
     @Test

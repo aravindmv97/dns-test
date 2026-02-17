@@ -335,7 +335,7 @@ class AppDomainRulesBottomSheet : BottomSheetDialogFragment(), WireguardListBtmS
     }
 
     private fun logEvent(details: String) {
-        eventLogger.log(EventType.FW_RULE_MODIFIED, Severity.LOW, "App domain rule", EventSource.UI, false, details)
+        eventLogger?.log(EventType.FW_RULE_MODIFIED, Severity.LOW, "App domain rule", EventSource.UI, false, details)
     }
 
     private fun io(f: suspend () -> Unit) {

@@ -61,7 +61,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class CustomIpAdapter(private val context: Context, private val type: CustomRulesActivity.RULES, private val eventLogger: EventLogger) :
+class CustomIpAdapter(private val context: Context, private val type: CustomRulesActivity.RULES, private val eventLogger: EventLogger?=null) :
     PagingDataAdapter<CustomIp, RecyclerView.ViewHolder>(DIFF_CALLBACK) {
 
     private val selectedItems = mutableSetOf<CustomIp>()
@@ -648,7 +648,7 @@ class CustomIpAdapter(private val context: Context, private val type: CustomRule
     }
 
     private fun logEvent(details: String) {
-        eventLogger.log(EventType.FW_RULE_MODIFIED, Severity.LOW, "Custom IP", EventSource.UI, false, details)
+        eventLogger?.log(EventType.FW_RULE_MODIFIED, Severity.LOW, "Custom IP", EventSource.UI, false, details)
     }
 
     private suspend fun ioCtx(f: suspend () -> Unit) {

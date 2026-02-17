@@ -378,7 +378,7 @@ class HomeScreenFragment : Fragment(R.layout.fragment_home_screen) {
 
     private fun logEvent(type: EventType, msg: String, details: String) {
         io {
-            eventLogger.log(type, Severity.LOW, msg, EventSource.UI, true, details)
+            eventLogger?.log(type, Severity.LOW, msg, EventSource.UI, true, details)
         }
     }
 

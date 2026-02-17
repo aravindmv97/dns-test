@@ -1043,7 +1043,7 @@ class AppInfoActivity : AppCompatActivity(R.layout.activity_app_details) {
     }
 
     private fun logEvent(msg: String, details: String) {
-        eventLogger.log(EventType.FW_RULE_MODIFIED, Severity.LOW, msg, EventSource.UI, false, details)
+        eventLogger?.log(EventType.FW_RULE_MODIFIED, Severity.LOW, msg, EventSource.UI, false, details)
     }
 
     private fun io(f: suspend () -> Unit): Job {

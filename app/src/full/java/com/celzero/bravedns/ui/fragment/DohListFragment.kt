@@ -176,6 +176,8 @@ class DohListFragment : Fragment(R.layout.fragment_doh_list) {
                 parsed.query == null &&
                 parsed.ref == null
         } catch (e: MalformedURLException) {
+            Log.e("checkUrl", "Malformed URL: $url", e) // Logs the error in Logcat
+
             false
         }
     }

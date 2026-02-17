@@ -109,7 +109,7 @@ object EncryptedFileManager : KoinComponent {
         val message = "$operation failed for file: $file"
         val details = "${cryptoException::class.simpleName}: ${cryptoException.message}\nCause: ${e::class.simpleName}: ${e.message}"
 
-        eventLogger.log(
+        eventLogger?.log(
             type = EventType.PROXY_ERROR,
             severity = Severity.CRITICAL,
             message = message,

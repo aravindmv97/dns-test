@@ -58,7 +58,7 @@ import java.util.concurrent.TimeUnit
 class FirewallAppListAdapter(
     private val context: Context,
     private val lifecycleOwner: LifecycleOwner,
-    private val eventLogger: EventLogger
+    private val eventLogger: EventLogger?=null
 ) : PagingDataAdapter<AppInfo, FirewallAppListAdapter.AppListViewHolder>(DIFF_CALLBACK), SectionedAdapter {
 
     private val packageManager: PackageManager = context.packageManager
@@ -478,7 +478,7 @@ class FirewallAppListAdapter(
     }
 
     private fun logEvent(details: String) {
-        eventLogger.log(EventType.FW_RULE_MODIFIED, Severity.LOW, "App list, rule change", EventSource.UI, false, details)
+        eventLogger?.log(EventType.FW_RULE_MODIFIED, Severity.LOW, "App list, rule change", EventSource.UI, false, details)
     }
 
     private suspend fun uiCtx(f: suspend () -> Unit) {

@@ -65,7 +65,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class WgConfigAdapter(private val context: Context, private val listener: DnsStatusListener, private val splitDns: Boolean, private val eventLogger: EventLogger) :
+class WgConfigAdapter(private val context: Context, private val listener: DnsStatusListener, private val splitDns: Boolean, private val eventLogger: EventLogger?=null) :
     PagingDataAdapter<WgConfigFiles, WgConfigAdapter.WgInterfaceViewHolder>(DIFF_CALLBACK) {
 
     private var lifecycleOwner: LifecycleOwner? = null
@@ -672,7 +672,7 @@ class WgConfigAdapter(private val context: Context, private val listener: DnsSta
     }
 
     private fun logEvent(msg: String, details: String) {
-        eventLogger.log(EventType.PROXY_SWITCH, Severity.LOW, msg, EventSource.UI, false, details)
+        eventLogger?.log(EventType.PROXY_SWITCH, Severity.LOW, msg, EventSource.UI, false, details)
     }
 
     private suspend fun uiCtx(f: suspend () -> Unit) {

@@ -1125,6 +1125,6 @@ class WgConfigDetailActivity : AppCompatActivity(R.layout.activity_wg_detail) {
     }
 
     private fun logEvent(msg: String, details: String) {
-        eventLogger.log(EventType.PROXY_SWITCH, Severity.LOW, msg, EventSource.UI, false, details)
+        eventLogger?.log(EventType.PROXY_SWITCH, Severity.LOW, msg, EventSource.UI, false, details)
     }
 }

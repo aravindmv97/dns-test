@@ -929,7 +929,7 @@ class TunnelSettingsActivity : AppCompatActivity(R.layout.activity_tunnel_settin
     }
 
     private fun logEvent(msg: String, details: String) {
-        eventLogger.log(EventType.TUN_ESTABLISHED, Severity.LOW, msg, EventSource.UI, false, details)
+        eventLogger?.log(EventType.TUN_ESTABLISHED, Severity.LOW, msg, EventSource.UI, false, details)
     }
 
     private fun enableAfterDelay(ms: Long, vararg views: View) {
