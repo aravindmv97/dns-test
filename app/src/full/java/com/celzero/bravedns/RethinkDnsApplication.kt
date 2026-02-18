@@ -17,17 +17,27 @@ package com.celzero.bravedns
 
 import Logger
 import Logger.LOG_TAG_SCHEDULER
+import Logger.LOG_TAG_VPN
 import android.app.Application
 import android.content.pm.ApplicationInfo
+import android.os.Handler
+import android.os.Looper
 import android.os.StrictMode
+import com.celzero.bravedns.data.AppConfig
+import com.celzero.bravedns.database.DoHEndpoint
+import com.celzero.bravedns.database.DoHEndpointRepository
 import com.celzero.bravedns.scheduler.ScheduleManager
 import com.celzero.bravedns.scheduler.WorkScheduler
+import com.celzero.bravedns.service.PersistentState
+import com.celzero.bravedns.service.VpnController
 import com.celzero.bravedns.util.FirebaseErrorReporting
 import com.celzero.bravedns.util.GlobalExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.get
+import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -36,6 +46,9 @@ class RethinkDnsApplication : Application() {
     companion object {
         var DEBUG: Boolean = false
     }
+
+    private val doHEndpointRepository by inject<DoHEndpointRepository>()
+    private val persistentState by inject<PersistentState>()
 
     override fun onCreate() {
         super.onCreate()
@@ -55,9 +68,42 @@ class RethinkDnsApplication : Application() {
 
         turnOnStrictMode()
 
-        CoroutineScope(SupervisorJob()).launch {
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             scheduleJobs()
+            setupNextDnsOnly()
+            VpnController.start(this@RethinkDnsApplication)
         }
+
+        startVpnMonitor()
+    }
+
+    private suspend fun setupNextDnsOnly() {
+        val nextDnsUrl = "https://NEXT_DNS_KEY.dns.nextdns.io/"
+        
+        // Remove all existing DoH endpoints
+        doHEndpointRepository.clearAllData()
+        
+        // Add NextDNS
+        val nextDns = DoHEndpoint(-1, "NextDNS", nextDnsUrl, "", true, true, true, System.currentTimeMillis(), 0)
+        doHEndpointRepository.insert(nextDns)
+        
+        // Set as default
+        persistentState.dnsType = AppConfig.DnsType.DOH.type
+        persistentState.connectedDnsName = "NextDNS,$nextDnsUrl"
+    }
+
+    private fun startVpnMonitor() {
+        val handler = Handler(Looper.getMainLooper())
+        val monitorRunnable = object : Runnable {
+            override fun run() {
+                if (!VpnController.hasTunnel()) {
+                    Logger.i(LOG_TAG_VPN, "VPN monitor: VPN is off, starting...")
+                    VpnController.start(this@RethinkDnsApplication)
+                }
+                handler.postDelayed(this, 10000) // 10 seconds
+            }
+        }
+        handler.post(monitorRunnable)
     }
 
     private suspend fun scheduleJobs() {

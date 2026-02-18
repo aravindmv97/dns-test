@@ -42,7 +42,6 @@ import com.celzero.bravedns.service.PersistentState
 import com.celzero.bravedns.service.RethinkBlocklistManager
 import com.celzero.bravedns.service.VpnController
 import com.celzero.bravedns.ui.activity.ConfigureRethinkBasicActivity
-import com.celzero.bravedns.ui.fragment.DnsSettingsFragment
 import com.celzero.bravedns.util.Constants
 import com.celzero.bravedns.util.Constants.Companion.INIT_TIME_MS
 import com.celzero.bravedns.util.Constants.Companion.LOCAL_BLOCKLIST_DOWNLOAD_FOLDER_NAME
@@ -89,7 +88,7 @@ class LocalBlocklistsBottomSheet : BottomSheetDialogFragment() {
         fun onBtmSheetDismiss()
     }
 
-    fun setDismissListener(listener: DnsSettingsFragment) {
+    fun setDismissListener(listener: OnBottomSheetDialogFragmentDismiss) {
         dismissListener = listener
     }
 
@@ -135,6 +134,18 @@ class LocalBlocklistsBottomSheet : BottomSheetDialogFragment() {
         init()
         initializeObservers()
         initializeClickListeners()
+    }
+
+    private fun updateLocalBlocklistUi() {
+        // no-op, logic removed as per requirements
+    }
+
+    private fun initializeClickListeners() {
+        // no-op, logic removed as per requirements
+    }
+
+    private fun handleDownloadStatus(status: AppDownloadManager.DownloadManagerStatus) {
+        // no-op, logic removed as per requirements
     }
 
     private fun init() {
@@ -323,33 +334,33 @@ class LocalBlocklistsBottomSheet : BottomSheetDialogFragment() {
     }
 
     private fun proceedWithDownload(isRedownload: Boolean) {
-        ui {
+        lifecycleScope.launch(Dispatchers.Main) {
             var status = AppDownloadManager.DownloadManagerStatus.NOT_STARTED
             b.lbbsDownload.isEnabled = false
             b.lbbsRedownload.isEnabled = false
             val currentTs = persistentState.localBlocklistTimestamp
-            ioCtx { status = appDownloadManager.downloadLocalBlocklist(currentTs, isRedownload) }
+            withContext(Dispatchers.IO) { status = appDownloadManager.downloadLocalBlocklist(currentTs, isRedownload) }
 
             handleDownloadStatus(status)
         }
     }
 
     private fun deleteLocalBlocklist() {
-        ui {
+        lifecycleScope.launch(Dispatchers.Main) {
             b.lbbsDelete.isEnabled = false
             b.lbbsDownload.isEnabled = false
             b.lbbsRedownload.isEnabled = false
             b.lbbsCheckDownload.isEnabled = false
 
-            ioCtx {
+            withContext(Dispatchers.IO) {
                 // delete the whole local blocklist folder
                 val path =
-                    blocklistCanonicalPath(requireContext(), LOCAL_BLOCKLIST_DOWNLOAD_FOLDER_NAME)
+                    Utilities.blocklistCanonicalPath(requireContext(), Constants.LOCAL_BLOCKLIST_DOWNLOAD_FOLDER_NAME)
                 val dir = File(path)
-                deleteRecursive(dir)
-                persistentState.localBlocklistTimestamp = INIT_TIME_MS
+                Utilities.deleteRecursive(dir)
+                persistentState.localBlocklistTimestamp = Constants.INIT_TIME_MS
                 persistentState.localBlocklistStamp = ""
-                persistentState.newestLocalBlocklistTimestamp = INIT_TIME_MS
+                persistentState.newestLocalBlocklistTimestamp = Constants.INIT_TIME_MS
             }
 
             updateLocalBlocklistUi()
@@ -362,338 +373,11 @@ class LocalBlocklistsBottomSheet : BottomSheetDialogFragment() {
         }
     }
 
-    private fun handleDownloadStatus(status: AppDownloadManager.DownloadManagerStatus) {
-        when (status) {
-            AppDownloadManager.DownloadManagerStatus.IN_PROGRESS -> {
-                ui { showCheckDownloadProgressUi() }
-            }
-            AppDownloadManager.DownloadManagerStatus.STARTED -> {
-                // the job of download status stops after initiating the work manager observer
-                ui {
-                    observeWorkManager()
-                    showCheckDownloadProgressUi()
-                }
-            }
-            AppDownloadManager.DownloadManagerStatus.NOT_STARTED -> {
-                // no-op
-            }
-            AppDownloadManager.DownloadManagerStatus.SUCCESS -> {
-                ui {
-                    showUpdateUi()
-                    b.lbbsCheckDownload.isEnabled = true
-                }
-                appDownloadManager.downloadRequired.postValue(
-                    AppDownloadManager.DownloadManagerStatus.NOT_STARTED
-                )
-            }
-            AppDownloadManager.DownloadManagerStatus.FAILURE -> {
-                ui {
-                    b.lbbsCheckDownload.isEnabled = true
-                    Utilities.showToastUiCentered(
-                        requireContext(),
-                        getString(R.string.blocklist_update_check_failure),
-                        Toast.LENGTH_SHORT
-                    )
-                }
-                appDownloadManager.downloadRequired.postValue(
-                    AppDownloadManager.DownloadManagerStatus.NOT_STARTED
-                )
-                onDownloadFail()
-            }
-            AppDownloadManager.DownloadManagerStatus.NOT_REQUIRED -> {
-                ui {
-                    showRedownloadUi()
-                    b.lbbsCheckDownload.isEnabled = true
-                    Utilities.showToastUiCentered(
-                        requireContext(),
-                        getString(R.string.blocklist_update_check_not_required),
-                        Toast.LENGTH_SHORT
-                    )
-                }
-                appDownloadManager.downloadRequired.postValue(
-                    AppDownloadManager.DownloadManagerStatus.NOT_STARTED
-                )
-            }
-            AppDownloadManager.DownloadManagerStatus.NOT_AVAILABLE -> {
-                // TODO: prompt user for app update
-                Utilities.showToastUiCentered(
-                    requireContext(),
-                    getString(R.string.blocklist_not_available_toast),
-                    Toast.LENGTH_SHORT
-                )
-            }
-        }
-    }
-
-    private fun updateLocalBlocklistUi() {
-        if (Utilities.isPlayStoreFlavour()) {
-            return
-        }
-
-        if (persistentState.blocklistEnabled) {
-            enableBlocklistUi()
-            return
-        }
-
-        disableBlocklistUi()
-    }
-
-    private fun enableBlocklistUi() {
-        b.lbbsEnable.text = getString(R.string.lbbs_enabled)
-        b.lbbsEnable.setTextColor(fetchToggleBtnColors(requireContext(), R.color.accentGood))
-        b.lbbsHeading.text =
-            getString(
-                R.string.settings_local_blocklist_in_use,
-                persistentState.numberOfLocalBlocklists.toString()
-            )
-        setDrawable(R.drawable.ic_tick, b.lbbsEnable)
-
-        b.lbbsConfigure.isEnabled = true
-        b.lbbsCopy.isEnabled = true
-        b.lbbsSearch.isEnabled = true
-
-        b.lbbsConfigure.alpha = 1f
-        b.lbbsCopy.alpha = 1f
-        b.lbbsSearch.alpha = 1f
-    }
-
-    private fun disableBlocklistUi() {
-        b.lbbsEnable.text = getString(R.string.lbl_disabled)
-        b.lbbsEnable.setTextColor(fetchToggleBtnColors(requireContext(), R.color.accentBad))
-        b.lbbsHeading.text = getString(R.string.lbbs_heading)
-        setDrawable(R.drawable.ic_cross_accent, b.lbbsEnable)
-
-        b.lbbsConfigure.isEnabled = false
-        b.lbbsCopy.isEnabled = false
-        b.lbbsSearch.isEnabled = false
-
-        b.lbbsConfigure.alpha = BUTTON_ALPHA_DISABLED
-        b.lbbsCopy.alpha = BUTTON_ALPHA_DISABLED
-        b.lbbsSearch.alpha = BUTTON_ALPHA_DISABLED
-    }
-
-    private fun initializeClickListeners() {
-        b.lbbsEnable.setOnClickListener { enableBlocklist() }
-
-        b.lbbsConfigure.setOnClickListener { invokeRethinkActivity() }
-
-        b.lbbsCopy.setOnClickListener {
-            val url = Constants.RETHINK_BASE_URL_MAX + persistentState.localBlocklistStamp
-            clipboardCopy(
-                requireContext(),
-                url,
-                requireContext().getString(R.string.copy_clipboard_label)
-            )
-            Utilities.showToastUiCentered(
-                requireContext(),
-                requireContext().getString(R.string.info_dialog_rethink_toast_msg),
-                Toast.LENGTH_SHORT
-            )
-        }
-
-        b.lbbsSearch.setOnClickListener {
-            // https://rethinkdns.com/search?s=<uri-encoded-stamp>
-            this.dismiss()
-            val url = RETHINK_SEARCH_URL + Uri.encode(persistentState.localBlocklistStamp)
-            openUrl(requireContext(), url)
-        }
-
-        b.lbbsDownload.setOnClickListener { showDownloadDialog(isRedownload = false) }
-
-        b.lbbsCheckDownload.setOnClickListener {
-            b.lbbsCheckDownload.isEnabled = false
-            isBlocklistUpdateAvailable()
-        }
-
-        b.lbbsRedownload.setOnClickListener { showDownloadDialog(isRedownload = true) }
-
-        b.lbbsDelete.setOnClickListener { showDeleteDialog() }
-    }
-
-    private fun isBlocklistUpdateAvailable() {
-        io { appDownloadManager.isDownloadRequired(RethinkBlocklistManager.DownloadType.LOCAL) }
-    }
-
-    private fun enableBlocklist() {
-        if (persistentState.blocklistEnabled) {
-            removeBraveDnsLocal()
-            updateLocalBlocklistUi()
-            return
-        }
-
-        if (!VpnController.hasTunnel()) {
-            Utilities.showToastUiCentered(
-                requireContext(),
-                getString(R.string.ssv_toast_start_rethink),
-                Toast.LENGTH_SHORT
-            )
-            return
-        }
-
-        ui {
-            val blocklistsExist =
-                withContext(Dispatchers.Default) {
-                    Utilities.hasLocalBlocklists(
-                        requireContext(),
-                        persistentState.localBlocklistTimestamp
-                    )
-                }
-
-            if (blocklistsExist) {
-                // now, rdnslocal obj is required to get/set the stamp from blocklists
-                // see RDNS#flagsToStamp, RDNS#stampToFlags
-                setBraveDnsLocal() // set remote blocklist even if stamp is not available
-                if (isLocalBlocklistStampAvailable()) {
-                    updateLocalBlocklistUi()
-                } else {
-                    // stamp is not available, show user the configure screen
-                    invokeRethinkActivity()
-                }
-            } else {
-                // no local blocklists found, prompt user to download
-                invokeRethinkActivity()
-            }
-        }
-    }
-
-    private fun invokeRethinkActivity() {
-        if (!VpnController.hasTunnel()) {
-            Utilities.showToastUiCentered(
-                requireContext(),
-                getString(R.string.ssv_toast_start_rethink),
-                Toast.LENGTH_SHORT
-            )
-            return
-        }
-
-        this.dismiss()
-        val intent = Intent(requireContext(), ConfigureRethinkBasicActivity::class.java)
-        intent.putExtra(
-            ConfigureRethinkBasicActivity.INTENT,
-            ConfigureRethinkBasicActivity.FragmentLoader.LOCAL.ordinal
-        )
-        requireContext().startActivity(intent)
-    }
-
-    private fun isLocalBlocklistStampAvailable(): Boolean {
-        return persistentState.localBlocklistStamp.isNotEmpty()
-    }
-
-    // FIXME: Verification of BraveDns object should be added in future.
-    private fun setBraveDnsLocal() {
-        persistentState.blocklistEnabled = true
-    }
-
-    private fun removeBraveDnsLocal() {
-        persistentState.blocklistEnabled = false
-    }
-
-    private fun setDrawable(drawable: Int, txt: AppCompatTextView) {
-        val end = ContextCompat.getDrawable(requireContext(), drawable)
-        txt.setCompoundDrawablesWithIntrinsicBounds(null, null, end, null)
-    }
-
-    private fun observeWorkManager() {
-        val workManager = WorkManager.getInstance(requireContext().applicationContext)
-
-        // observer for custom download manager worker
-        workManager.getWorkInfosByTagLiveData(LocalBlocklistCoordinator.CUSTOM_DOWNLOAD).observe(
-            viewLifecycleOwner
-        ) { workInfoList ->
-            val workInfo = workInfoList?.getOrNull(0) ?: return@observe
-            Logger.i(
-                Logger.LOG_TAG_DOWNLOAD,
-                "WorkManager state: ${workInfo.state} for ${LocalBlocklistCoordinator.CUSTOM_DOWNLOAD}"
-            )
-            if (
-                WorkInfo.State.ENQUEUED == workInfo.state ||
-                    WorkInfo.State.RUNNING == workInfo.state
-            ) {
-                onDownloadProgress()
-            } else if (WorkInfo.State.SUCCEEDED == workInfo.state) {
-                onDownloadSuccess()
-                workManager.pruneWork()
-            } else if (
-                WorkInfo.State.CANCELLED == workInfo.state ||
-                    WorkInfo.State.FAILED == workInfo.state
-            ) {
-                onDownloadFail()
-                workManager.pruneWork()
-                workManager.cancelAllWorkByTag(LocalBlocklistCoordinator.CUSTOM_DOWNLOAD)
-            } else { // state == blocked
-                // no-op
-            }
-        }
-
-        // observer for Androids default download manager
-        workManager.getWorkInfosByTagLiveData(DownloadConstants.DOWNLOAD_TAG).observe(
-            viewLifecycleOwner
-        ) { workInfoList ->
-            val workInfo = workInfoList?.getOrNull(0) ?: return@observe
-            Logger.i(
-                Logger.LOG_TAG_DOWNLOAD,
-                "WorkManager state: ${workInfo.state} for ${DownloadConstants.DOWNLOAD_TAG}"
-            )
-            if (
-                WorkInfo.State.ENQUEUED == workInfo.state ||
-                    WorkInfo.State.RUNNING == workInfo.state
-            ) {
-                onDownloadProgress()
-            } else if (
-                WorkInfo.State.CANCELLED == workInfo.state ||
-                    WorkInfo.State.FAILED == workInfo.state
-            ) {
-                onDownloadFail()
-                workManager.pruneWork()
-                workManager.cancelAllWorkByTag(DownloadConstants.DOWNLOAD_TAG)
-                workManager.cancelAllWorkByTag(DownloadConstants.FILE_TAG)
-            } else { // state == blocked, succeeded
-                // no-op
-            }
-        }
-
-        workManager.getWorkInfosByTagLiveData(DownloadConstants.FILE_TAG).observe(
-            viewLifecycleOwner
-        ) { workInfoList ->
-            if (workInfoList != null && workInfoList.isNotEmpty()) {
-                val workInfo = workInfoList[0]
-                if (workInfo.state == WorkInfo.State.SUCCEEDED) {
-                    Logger.i(
-                        Logger.LOG_TAG_DOWNLOAD,
-                        "AppDownloadManager Work Manager completed - ${DownloadConstants.FILE_TAG}"
-                    )
-                    onDownloadSuccess()
-                    workManager.pruneWork()
-                } else if (
-                    workInfo.state == WorkInfo.State.CANCELLED ||
-                    workInfo.state == WorkInfo.State.FAILED
-                ) {
-                    onDownloadFail()
-                    workManager.pruneWork()
-                    workManager.cancelAllWorkByTag(DownloadConstants.FILE_TAG)
-                    Logger.i(
-                        Logger.LOG_TAG_DOWNLOAD,
-                        "AppDownloadManager Work Manager failed - ${DownloadConstants.FILE_TAG}"
-                    )
-                } else {
-                    Logger.i(
-                        Logger.LOG_TAG_DOWNLOAD,
-                        "AppDownloadManager Work Manager - ${DownloadConstants.FILE_TAG}, ${workInfo.state}"
-                    )
-                }
-            }
-        }
-    }
-
     private fun ui(f: suspend () -> Unit) {
         lifecycleScope.launch(Dispatchers.Main) { f() }
     }
 
     private suspend fun ioCtx(f: suspend () -> Unit) {
         withContext(Dispatchers.IO) { f() }
-    }
-
-    private fun io(f: suspend () -> Unit) {
-        lifecycleScope.launch(Dispatchers.IO) { f() }
     }
 }

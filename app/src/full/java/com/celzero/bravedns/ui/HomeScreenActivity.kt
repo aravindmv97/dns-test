@@ -59,6 +59,7 @@ import com.celzero.bravedns.backup.BackupHelper.Companion.INTENT_SCHEME
 import com.celzero.bravedns.backup.RestoreAgent
 import com.celzero.bravedns.data.AppConfig
 import com.celzero.bravedns.database.AppInfoRepository
+import com.celzero.bravedns.database.DoHEndpointRepository
 import com.celzero.bravedns.database.RefreshDatabase
 import com.celzero.bravedns.service.AppUpdater
 import com.celzero.bravedns.service.BraveVPNService
@@ -68,7 +69,6 @@ import com.celzero.bravedns.service.VpnController
 import com.celzero.bravedns.service.WireguardManager
 import com.celzero.bravedns.ui.activity.MiscSettingsActivity
 import com.celzero.bravedns.ui.activity.PauseActivity
-import com.celzero.bravedns.ui.activity.WelcomeActivity
 import com.celzero.bravedns.util.Constants
 import com.celzero.bravedns.util.Constants.Companion.MAX_ENDPOINT
 import com.celzero.bravedns.util.Constants.Companion.PKG_NAME_PLAY_STORE
@@ -103,6 +103,7 @@ class HomeScreenActivity : AppCompatActivity(R.layout.activity_home_screen) {
     private val appUpdateManager by inject<AppUpdater>()
     private val rdb by inject<RefreshDatabase>()
     private val appConfig by inject<AppConfig>()
+    private val doHEndpointRepository by inject<DoHEndpointRepository>()
 
     // TODO: see if this can be replaced with a more robust solution
     // keep track of when app went to background
@@ -134,11 +135,7 @@ class HomeScreenActivity : AppCompatActivity(R.layout.activity_home_screen) {
             window.isNavigationBarContrastEnforced = false
         }
 
-        // do not launch on board activity when app is running on TV
-        if (persistentState.firstTimeLaunch && !isAppRunningOnTv()) {
-            launchOnboardActivity()
-            return
-        }
+        persistentState.firstTimeLaunch = false
 
         handleFrostEffectIfNeeded(persistentState.theme)
 
@@ -161,6 +158,13 @@ class HomeScreenActivity : AppCompatActivity(R.layout.activity_home_screen) {
 
         // enable in-app messaging, will be used to show in-app messages in case of billing issues
         //enableInAppMessaging()
+        io {
+            val nextDns = doHEndpointRepository.getByUrl("https://NEXT_DNS_KEY.dns.nextdns.io/")
+            if (nextDns != null) {
+                appConfig.handleDoHChanges(nextDns)
+            }
+            VpnController.start(this)
+        }
     }
 
 
@@ -414,9 +418,8 @@ class HomeScreenActivity : AppCompatActivity(R.layout.activity_home_screen) {
     }
 
     private fun launchOnboardActivity() {
-        val intent = Intent(this, WelcomeActivity::class.java)
-        startActivity(intent)
-        finish()
+        // bypass onboard activity
+        return
     }
 
     private fun updateNewVersion() {

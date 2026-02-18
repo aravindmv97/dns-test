@@ -30,6 +30,10 @@ class DoHEndpointRepository(private val doHEndpointDAO: DoHEndpointDAO) {
         doHEndpointDAO.insert(doHEndpoint)
     }
 
+    suspend fun insert(doHEndpoint: DoHEndpoint) {
+        doHEndpointDAO.insert(doHEndpoint)
+    }
+
     suspend fun deleteOlderData(date: Long) {
         doHEndpointDAO.deleteOlderData(date)
     }
@@ -46,11 +50,19 @@ class DoHEndpointRepository(private val doHEndpointDAO: DoHEndpointDAO) {
         return doHEndpointDAO.getConnectedDoH()
     }
 
+    suspend fun getByUrl(url: String): DoHEndpoint? {
+        return doHEndpointDAO.getByUrl(url)
+    }
+
     suspend fun getCount(): Int {
         return doHEndpointDAO.getCount()
     }
 
     suspend fun getAllDefaultDoHEndpoints(): List<DoHEndpoint> {
         return doHEndpointDAO.getAllDefaultDoHEndpoints()
+    }
+
+    suspend fun clearAllData() {
+        doHEndpointDAO.clearAllData()
     }
 }

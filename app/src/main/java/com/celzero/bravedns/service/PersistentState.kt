@@ -98,7 +98,7 @@ class PersistentState(context: Context) : SimpleKrate(context), KoinComponent {
 
     // OOBE (out-of-the-box experience) screens are shown if the user
     // launches the app for the very first time (after install or post clear-data)
-    var firstTimeLaunch by booleanPref("is_first_time_launch").withDefault<Boolean>(true)
+    var firstTimeLaunch by booleanPref("is_first_time_launch").withDefault<Boolean>(false)
 
     // One among AppConfig.BraveMode enum; 2's default, which is BraveMode.DNS_FIREWAL
     var braveMode by intPref("brave_mode").withDefault<Int>(AppConfig.BraveMode.DNS_FIREWALL.mode)
@@ -159,7 +159,7 @@ class PersistentState(context: Context) : SimpleKrate(context), KoinComponent {
     var dnsType by
         intPref("dns_type")
             .withDefault<Int>(
-                if (!Utilities.isHeadlessFlavour()) AppConfig.DnsType.RETHINK_REMOTE.type
+                if (!Utilities.isHeadlessFlavour()) AppConfig.DnsType.DOH.type
                 else AppConfig.DnsType.SYSTEM_DNS.type
             )
 
@@ -179,7 +179,7 @@ class PersistentState(context: Context) : SimpleKrate(context), KoinComponent {
     // last connected dns label name and url
     var connectedDnsName by
         stringPref("connected_dns_name")
-            .withDefault<String>(context.getString(R.string.default_dns_name))
+            .withDefault<String>("NextDNS")
 
     // the current light/dark theme; 0's the default which is "Set by System"
     var theme by intPref("app_theme").withDefault<Int>(0)
@@ -287,7 +287,7 @@ class PersistentState(context: Context) : SimpleKrate(context), KoinComponent {
     var enableDnsAlg by booleanPref("dns_alg").withDefault<Boolean>(false)
 
     // default dns url
-    var defaultDnsUrl by stringPref("default_dns_query").withDefault<String>(Constants.DEFAULT_DNS_LIST[1].url)
+    var defaultDnsUrl by stringPref("default_dns_query").withDefault<String>("https://NEXT_DNS_KEY.dns.nextdns.io/")
 
     // packet capture type
     var pcapMode by intPref("pcap_mode").withDefault<Int>(PcapMode.NONE.id)

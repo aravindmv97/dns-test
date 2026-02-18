@@ -46,15 +46,15 @@ class ConfigureFragment : Fragment(R.layout.fragment_configure) {
         }
 
     enum class ScreenType {
-        APPS,
+//        APPS,
         DNS,
-        FIREWALL,
-        PROXY,
-        VPN,
-        OTHERS,
-        LOGS,
-        ANTI_CENSORSHIP,
-        ADVANCED
+//        FIREWALL,
+//        PROXY,
+//        VPN,
+//        OTHERS,
+//        LOGS,
+//        ANTI_CENSORSHIP,
+//        ADVANCED
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -66,81 +66,81 @@ class ConfigureFragment : Fragment(R.layout.fragment_configure) {
     private fun initView() {
         if (DEBUG) {
             b.fsAdvancedCard.visibility = View.VISIBLE
-            b.fsAdvancedTv.text = getString(R.string.lbl_advanced).replaceFirstChar(Char::titlecase)
+//            b.fsAdvancedTv.text = getString(R.string.lbl_advanced).replaceFirstChar(Char::titlecase)
         } else {
             b.fsAdvancedCard.visibility = View.GONE
         }
-        b.fsNetworkTv.text = getString(R.string.lbl_network).replaceFirstChar(Char::titlecase)
-        b.fsLogsTv.text = getString(R.string.lbl_logs).replaceFirstChar(Char::titlecase)
-        b.fsAntiCensorshipTv.text =
+//        b.fsNetworkTv.text = getString(R.string.lbl_network).replaceFirstChar(Char::titlecase)
+//        b.fsLogsTv.text = getString(R.string.lbl_logs).replaceFirstChar(Char::titlecase)
+//        b.fsAntiCensorshipTv.text =
             getString(R.string.anti_censorship_title).replaceFirstChar(Char::titlecase)
     }
 
     private fun setupClickListeners() {
-        b.fsAppsCard.setOnClickListener {
-            // open apps configuration
-            startActivity(ScreenType.APPS)
-        }
+//        b.fsAppsCard.setOnClickListener {
+//            // open apps configuration
+//            startActivity(ScreenType.APPS)
+//        }
 
         b.fsDnsCard.setOnClickListener {
             // open dns configuration
             startActivity(ScreenType.DNS)
         }
 
-        b.fsFirewallCard.setOnClickListener {
-            // open firewall configuration
-            startActivity(ScreenType.FIREWALL)
-        }
-
-        b.fsProxyCard.setOnClickListener {
-            // open proxy configuration
-            startActivity(ScreenType.PROXY)
-        }
-
-        b.fsNetworkCard.setOnClickListener {
-            // open vpn configuration
-            startActivity(ScreenType.VPN)
-        }
-
-        b.fsOthersCard.setOnClickListener {
-            // open others configuration
-            startActivity(ScreenType.OTHERS)
-        }
-
-        b.fsLogsCard.setOnClickListener {
-            // open logs configuration
-            startActivity(ScreenType.LOGS)
-        }
-
-        b.fsAntiCensorshipCard.setOnClickListener {
-            // open developer options configuration
-            startActivity(ScreenType.ANTI_CENSORSHIP)
-        }
-
-        b.fsAdvancedCard.setOnClickListener {
-            // open developer options configuration
-            startActivity(ScreenType.ADVANCED)
-        }
+//        b.fsFirewallCard.setOnClickListener {
+//            // open firewall configuration
+//            startActivity(ScreenType.FIREWALL)
+//        }
+//
+//        b.fsProxyCard.setOnClickListener {
+//            // open proxy configuration
+//            startActivity(ScreenType.PROXY)
+//        }
+//
+//        b.fsNetworkCard.setOnClickListener {
+//            // open vpn configuration
+//            startActivity(ScreenType.VPN)
+//        }
+//
+//        b.fsOthersCard.setOnClickListener {
+//            // open others configuration
+//            startActivity(ScreenType.OTHERS)
+//        }
+//
+//        b.fsLogsCard.setOnClickListener {
+//            // open logs configuration
+//            startActivity(ScreenType.LOGS)
+//        }
+//
+//        b.fsAntiCensorshipCard.setOnClickListener {
+//            // open developer options configuration
+//            startActivity(ScreenType.ANTI_CENSORSHIP)
+//        }
+//
+//        b.fsAdvancedCard.setOnClickListener {
+//            // open developer options configuration
+//            startActivity(ScreenType.ADVANCED)
+//        }
     }
 
     private fun startActivity(type: ScreenType) {
         val intent =
             when (type) {
-                ScreenType.APPS -> Intent(requireContext(), AppListActivity::class.java)
+//                ScreenType.APPS -> Intent(requireContext(), AppListActivity::class.java)
                 ScreenType.DNS -> Intent(requireContext(), DnsDetailActivity::class.java)
-                ScreenType.FIREWALL -> Intent(requireContext(), FirewallActivity::class.java)
-                ScreenType.PROXY -> Intent(requireContext(), ProxySettingsActivity::class.java)
-                ScreenType.VPN -> Intent(requireContext(), TunnelSettingsActivity::class.java)
-                ScreenType.OTHERS -> Intent(requireContext(), MiscSettingsActivity::class.java)
-                ScreenType.LOGS -> Intent(requireContext(), NetworkLogsActivity::class.java)
-                ScreenType.ANTI_CENSORSHIP -> Intent(requireContext(), AntiCensorshipActivity::class.java)
-                ScreenType.ADVANCED -> Intent(requireContext(), AdvancedSettingActivity::class.java)
+//                ScreenType.FIREWALL -> Intent(requireContext(), FirewallActivity::class.java)
+//                ScreenType.PROXY -> Intent(requireContext(), ProxySettingsActivity::class.java)
+//                ScreenType.VPN -> Intent(requireContext(), TunnelSettingsActivity::class.java)
+//                ScreenType.OTHERS -> Intent(requireContext(), MiscSettingsActivity::class.java)
+//                ScreenType.LOGS -> Intent(requireContext(), NetworkLogsActivity::class.java)
+//                ScreenType.ANTI_CENSORSHIP -> Intent(requireContext(), AntiCensorshipActivity::class.java)
+//                ScreenType.ADVANCED -> Intent(requireContext(), AdvancedSettingActivity::class.java)
             }
+        startActivity(intent)
 
-        if (type == ScreenType.OTHERS) {
-            miscSettingsResultLauncher.launch(intent)
-        } else {
-            startActivity(intent)
-        }
+//        if (type == ScreenType.OTHERS) {
+//            miscSettingsResultLauncher.launch(intent)
+//        } else {
+//        }
     }
 }

@@ -59,6 +59,9 @@ interface DoHEndpointDAO {
     @Query("select * from DoHEndpoint where isSelected = 1")
     fun getConnectedDoH(): DoHEndpoint?
 
+    @Query("select * from DoHEndpoint where dohURL = :url")
+    fun getByUrl(url: String): DoHEndpoint?
+
     @Query("select * from DoHEndpoint where isCustom = 0")
     fun getAllDefaultDoHEndpoints(): List<DoHEndpoint>
 

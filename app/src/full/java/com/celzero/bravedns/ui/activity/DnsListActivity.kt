@@ -16,7 +16,6 @@
 package com.celzero.bravedns.ui.activity
 
 import android.content.Context
-import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -67,24 +66,6 @@ class DnsListActivity : AppCompatActivity(R.layout.activity_other_dns_list) {
     }
 
     private fun setupClickListeners() {
-        b.cardDnscrypt.setOnClickListener {
-            startActivity(
-                ConfigureOtherDnsActivity.getIntent(
-                    this,
-                    ConfigureOtherDnsActivity.DnsScreen.DNS_CRYPT.index
-                )
-            )
-        }
-
-        b.cardDnsproxy.setOnClickListener {
-            startActivity(
-                ConfigureOtherDnsActivity.getIntent(
-                    this,
-                    ConfigureOtherDnsActivity.DnsScreen.DNS_PROXY.index
-                )
-            )
-        }
-
         b.cardDoh.setOnClickListener {
             startActivity(
                 ConfigureOtherDnsActivity.getIntent(
@@ -93,35 +74,6 @@ class DnsListActivity : AppCompatActivity(R.layout.activity_other_dns_list) {
                 )
             )
         }
-
-        b.cardDot.setOnClickListener {
-            startActivity(
-                ConfigureOtherDnsActivity.getIntent(
-                    this,
-                    ConfigureOtherDnsActivity.DnsScreen.DOT.index
-                )
-            )
-        }
-
-        b.cardOdoh.setOnClickListener {
-            startActivity(
-                ConfigureOtherDnsActivity.getIntent(
-                    this,
-                    ConfigureOtherDnsActivity.DnsScreen.ODOH.index
-                )
-            )
-        }
-
-        b.cardRethinkDns.setOnClickListener { invokeRethinkActivity() }
-    }
-
-    private fun invokeRethinkActivity() {
-        val intent = Intent(this, ConfigureRethinkBasicActivity::class.java)
-        intent.putExtra(
-            ConfigureRethinkBasicActivity.INTENT,
-            ConfigureRethinkBasicActivity.FragmentLoader.DB_LIST.ordinal
-        )
-        startActivity(intent)
     }
 
     override fun onResume() {
@@ -132,27 +84,12 @@ class DnsListActivity : AppCompatActivity(R.layout.activity_other_dns_list) {
 
     private fun resetUi() {
         b.cardDoh.strokeWidth = 0
-        b.cardDnsproxy.strokeWidth = 0
-        b.cardDnscrypt.strokeWidth = 0
-        b.cardDot.strokeWidth = 0
-        b.cardOdoh.strokeWidth = 0
-        b.cardRethinkDns.strokeWidth = 0
         b.initialDoh.setTextColor(fetchColor(this, R.attr.primaryTextColor))
         b.abbrDoh.setTextColor(fetchColor(this, R.attr.primaryTextColor))
-        b.initialDnsproxy.setTextColor(fetchColor(this, R.attr.primaryTextColor))
-        b.abbrDnsproxy.setTextColor(fetchColor(this, R.attr.primaryTextColor))
-        b.initialDnscrypt.setTextColor(fetchColor(this, R.attr.primaryTextColor))
-        b.abbrDnscrypt.setTextColor(fetchColor(this, R.attr.primaryTextColor))
-        b.initialDot.setTextColor(fetchColor(this, R.attr.primaryTextColor))
-        b.abbrDot.setTextColor(fetchColor(this, R.attr.primaryTextColor))
-        b.initialOdoh.setTextColor(fetchColor(this, R.attr.primaryTextColor))
-        b.abbrOdoh.setTextColor(fetchColor(this, R.attr.primaryTextColor))
-        b.initialRethinkDns.setTextColor(fetchColor(this, R.attr.primaryTextColor))
-        b.abbrRethinkDns.setTextColor(fetchColor(this, R.attr.primaryTextColor))
     }
 
     private fun updateSelectedStatus() {
-        io {
+        lifecycleScope.launch(Dispatchers.IO) {
             // always use the id as Dnsx.Preffered as it is the primary dns id for now
             val id = if (appConfig.isSmartDnsEnabled()) {
                 Backend.Plus
@@ -175,7 +112,7 @@ class DnsListActivity : AppCompatActivity(R.layout.activity_other_dns_list) {
                         }
                     }
                 }
-            uiCtx { highlightSelectedUi(working) }
+            withContext(Dispatchers.Main) { highlightSelectedUi(working) }
         }
     }
 
@@ -190,54 +127,11 @@ class DnsListActivity : AppCompatActivity(R.layout.activity_other_dns_list) {
             textColor = fetchColor(this, R.attr.accentBad)
         }
 
-        when (appConfig.getDnsType()) {
-            AppConfig.DnsType.DOH -> {
-                b.cardDoh.strokeColor = strokeColor
-                b.cardDoh.strokeWidth = 2
-                b.initialDoh.setTextColor(textColor)
-                b.abbrDoh.setTextColor(textColor)
-            }
-            AppConfig.DnsType.DNS_PROXY -> {
-                b.cardDnsproxy.strokeColor = strokeColor
-                b.cardDnsproxy.strokeWidth = 2
-                b.initialDnsproxy.setTextColor(textColor)
-                b.abbrDnsproxy.setTextColor(textColor)
-            }
-            AppConfig.DnsType.DNSCRYPT -> {
-                b.cardDnscrypt.strokeColor = strokeColor
-                b.cardDnscrypt.strokeWidth = 2
-                b.initialDnscrypt.setTextColor(textColor)
-                b.abbrDnscrypt.setTextColor(textColor)
-            }
-            AppConfig.DnsType.DOT -> {
-                b.cardDot.strokeColor = strokeColor
-                b.cardDot.strokeWidth = 2
-                b.initialDot.setTextColor(textColor)
-                b.abbrDot.setTextColor(textColor)
-            }
-            AppConfig.DnsType.ODOH -> {
-                b.cardOdoh.strokeColor = strokeColor
-                b.cardOdoh.strokeWidth = 2
-                b.initialOdoh.setTextColor(textColor)
-                b.abbrOdoh.setTextColor(textColor)
-            }
-            AppConfig.DnsType.RETHINK_REMOTE -> {
-                b.cardRethinkDns.strokeColor = strokeColor
-                b.cardRethinkDns.strokeWidth = 2
-                b.initialRethinkDns.setTextColor(textColor)
-                b.abbrRethinkDns.setTextColor(textColor)
-            }
-            else -> {
-                // no-op
-            }
+        if (appConfig.getDnsType() == AppConfig.DnsType.DOH) {
+            b.cardDoh.strokeColor = strokeColor
+            b.cardDoh.strokeWidth = 2
+            b.initialDoh.setTextColor(textColor)
+            b.abbrDoh.setTextColor(textColor)
         }
-    }
-
-    private suspend fun uiCtx(f: suspend () -> Unit) {
-        withContext(Dispatchers.Main) { f() }
-    }
-
-    private fun io(f: suspend () -> Unit) {
-        lifecycleScope.launch(Dispatchers.IO) { f() }
     }
 }

@@ -15,13 +15,14 @@
  */
 package com.celzero.bravedns.database
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "WgConfigFiles")
 class WgConfigFiles {
-    @PrimaryKey(autoGenerate = true) var id: Int = 0
+    @PrimaryKey(autoGenerate = false) var id: Int = 0
     var name: String = ""
     var configPath: String = ""
     var serverResponse: String = ""
@@ -33,7 +34,7 @@ class WgConfigFiles {
     // new: ssid based activation
     var ssidEnabled: Boolean = false
     var ssids: String = "" // newline separated list
-    var modifiedTs: Long = System.currentTimeMillis()
+    @ColumnInfo(defaultValue = "0") var modifiedTs: Long = System.currentTimeMillis()
 
     override fun equals(other: Any?): Boolean {
         if (other !is WgConfigFiles) return false
