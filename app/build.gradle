@@ -396,8 +396,8 @@ dependencies {
 
     leakCanaryImplementation 'com.squareup.leakcanary:leakcanary-android:2.14'
 
-    fullImplementation 'androidx.navigation:navigation-fragment-ktx:2.9.5'
-    fullImplementation 'androidx.navigation:navigation-ui-ktx:2.9.5'
+    fullImplementation 'androidx.navigation:navigation-fragment-ktx:2.9.7'
+    fullImplementation 'androidx.navigation:navigation-ui-ktx:2.9.7'
 
     fullImplementation 'androidx.biometric:biometric:1.1.0'
 
